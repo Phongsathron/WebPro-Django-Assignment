@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create New Poll</title>
+    <style>
+        .errorlist{
+            color: #FF0000;
+        }
+    </style>
+</head>
+<body>
+<h1>Create new poll</h1>
+    <form method="post" action="{% url 'poll_create' %}">
+        {% csrf_token %}
+        <table border="1">
+            <tr>
+                <td><label id="{{ form.title.id_for_label }}">{{ form.title.label }}</label></td>
+                <td>{{ form.title.errors }}{{ form.title }}</td>
+                <td><label id="{{ form.no_question.id_for_label }}">{{ form.no_question.label }}</label></td>
+                <td>{{ form.no_question.errors }}{{ form.no_question }}</td>
+            </tr>
+            <tr>
+                <td><label id="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label></td>
+                <td>{{ form.start_date.errors }}{{ form.start_date }}</td>
+                <td><label id="{{ form.end_date.id_for_label }}">{{ form.end_date.label }}</label></td>
+                <td>{{ form.end_date.errors }}{{ form.end_date }}</td>
+            </tr>
+            <tr>
+                <td colspan="4"><input type="submit" value="Create"></td>
+            </tr>
+        </table>
+    </form>
+</body>
+</html>
