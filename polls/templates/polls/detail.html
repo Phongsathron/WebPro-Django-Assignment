@@ -15,6 +15,7 @@
         <form method="post" action="{% url 'poll_detail' poll.id %}">
             {% csrf_token %}
             <div style="text-align: center">
+                <a href="{% url 'create_comment' poll.id %}">เพิ่ม Comment</a>
                 <input type="submit" value="save">
                 <input type="button" value="cancel" onclick="window.location = {% url 'index' %}">
             </div>

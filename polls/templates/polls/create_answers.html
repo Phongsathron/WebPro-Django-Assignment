@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create questions</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        {{ no_questions }}
+        <h1>Create Question for poll: {{ poll.title }}</h1>
+        <form method="post" action="{% url 'create_answer' poll.id %}">
+            {% csrf_token %}
+            <p>Question title: <input type="text" name="title"></p>
+            <h3>Choices:</h3>
+            <table>
+                <tr>
+                    <th>Choice text</th>
+                    <th>Choice value</th>
+                </tr>
+                <tr v-for="i in no_questions" :key="i">
+                    <td><input type="text" :name="'choice'+i"></td>
+                    <td><input type="text" :name="'value'+i"></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button @click.prevent="addChoice()">Add button</button></td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="hidden" name="no_questions" v-model="no_questions">
+                        <input type="submit" value="Save">
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                no_questions: 2
+            },
+            methods: {
+                addChoice(){
+                    this.no_questions += 1
+                }
+            }
+        })
+    </script>
+</body>
+</html>

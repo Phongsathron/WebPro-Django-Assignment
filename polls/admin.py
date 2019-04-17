@@ -1,7 +1,11 @@
 from django.contrib import admin
 
 # Register your models here.
+from django.contrib.auth.models import Permission
+
 from polls.models import Poll, Question, Choice
+
+admin.site.register(Permission)
 
 
 class QuestionInline(admin.StackedInline):

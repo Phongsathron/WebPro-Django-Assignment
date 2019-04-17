@@ -1,9 +1,11 @@
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
 # from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
-from polls.forms import PollForm
-from polls.models import Poll, Question, Answer
+from polls.forms import PollForm, CommentForm
+from polls.models import Poll, Question, Answer, Choice, Comment
 
 
 # Create your views here.
@@ -25,6 +27,8 @@ def index(request):
     # return HttpResponse("Hello World, welcome to your first view")
 
 
+@login_required
+@permission_required('polls.view_poll')
 def detail(request, poll_id):
 
     poll_detail = Poll.objects.get(pk=poll_id)
@@ -57,6 +61,8 @@ def detail(request, poll_id):
     # return HttpResponse("This is a poll detail of %d" % poll_id)
 
 
+@login_required
+@permission_required('polls.add_poll')
 def create(request):
     if request.method == 'POST':
         form = PollForm(request.POST)
@@ -68,14 +74,106 @@ def create(request):
                 end_date=form.cleaned_data.get('end_date')
             )
 
-            for i in range(1, form.cleaned_data.get('no_question')+1):
-                Question.objects.create(
-                    text='0000' + str(i),
-                    type='01',
-                    poll=poll
-                )
+            # for i in range(1, form.cleaned_data.get('no_questions')+1):
+            #     Question.objects.create(
+            #         text='0000' + str(i),
+            #         type='01',
+            #         poll=poll
+            #     )
+
+            return redirect('create_answer', poll_id=poll.id)
+
     else:
         form = PollForm()
 
-    context = {'form': form}
+    context = {
+        'form': form,
+    }
+
     return render(request, 'polls/create.html', context=context)
+
+
+def createAnswer(request, poll_id):
+    poll = Poll.objects.get(pk=poll_id)
+
+    if request.method == 'POST':
+        question = Question.objects.create(
+            text=request.POST.get('title'),
+            type='01',
+            poll=poll
+        )
+
+        for i in range(1, int(request.POST.get('no_questions'))+1):
+            Choice.objects.create(
+                text=request.POST.get('choice{}'.format(i)),
+                value=request.POST.get('value{}'.format(i)),
+                question=question
+            )
+
+        return redirect('index')
+
+    context = {'poll': poll}
+
+    return render(request, 'polls/create_answers.html', context=context)
+
+
+def mylogin(request):
+
+    context = {}
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user:
+            login(request, user)
+
+            next_url = request.POST.get('next_url')
+            if next_url:
+                return redirect(next_url)
+            else:
+                return redirect('index')
+        else:
+            context['username'] = username
+            context['password'] = password
+            context['error'] = 'Wrong username or password'
+
+    next_url = request.GET.get('next')
+    if next_url:
+        context['next_url'] = next_url
+
+    return render(request, 'polls/login.html', context=context)
+
+
+def mylogout(request):
+    logout(request)
+    return redirect('login')
+
+
+def createComment(request, poll_id):
+    poll = Poll.objects.get(pk=poll_id)
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+
+        if form.is_valid():
+            Comment.objects.create(
+                title=form.cleaned_data.get('title'),
+                body=form.cleaned_data.get('body'),
+                email=form.cleaned_data.get('email'),
+                tel=form.cleaned_data.get('tel')
+            )
+
+            return redirect('poll_detail', poll_id=poll_id)
+
+    else:
+        form = CommentForm()
+
+    context = {
+        'form': form,
+        'poll': poll
+    }
+
+    return render(request, 'polls/create_comment.html', context=context)

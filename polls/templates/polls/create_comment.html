@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create comment</title>
+    <style>
+        .errorlist{
+            color: #FF0000;
+        }
+    </style>
+</head>
+<body>
+    <form method="post" action="{% url 'create_comment' poll.id %}">
+        {% csrf_token %}
+        <h1>New Comment</h1>
+
+        {% if form.non_field_errors %}
+        <p>
+            {{ form.non_field_errors }}
+        </p>
+        {% endif %}
+
+        <p>Title <br>
+        {{ form.title }} <br>
+        {{ form.title.errors }}</p>
+
+        <p>Body <br>
+        {{ form.body }} <br>
+        {{ form.body.errors }}</p>
+
+        <p>Email <br>
+        {{ form.email }} <br>
+        {{ form.email.errors }}</p>
+
+        <p>Mobile Number <br>
+        {{ form.tel }} <br>
+        {{ form.tel.errors }}</p>
+
+        <input type="submit" value="save">
+    </form>
+</body>
+</html>

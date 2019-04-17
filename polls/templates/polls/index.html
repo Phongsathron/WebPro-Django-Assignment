@@ -16,7 +16,10 @@
             <div class="col-md-9">
                 <ul>
                     {% for poll in poll_list %}
-                        <li>{{ poll.id }}. {{ poll.title }} ({{ poll.question_count }} คำถาม) - <a href="{% url 'poll_detail' poll_id=poll.id %}">detail</a></li>
+                        <li>{{ poll.id }}. {{ poll.title }} ({{ poll.question_count }} คำถาม) -
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'poll_detail' poll_id=poll.id %}">detail</a></li>
+                            {% endif %}
                     {% endfor %}
                 </ul>
             </div>
@@ -24,6 +27,18 @@
                 <img src="{% static 'images/220px-LiuNianJan2019.jpg'%}">
             </div>
         </div>
+
+        {% if user.is_authenticated %}
+        <p>
+            <a href="{% url 'logout' %}">Logout</a>
+        </p>
+        {% endif %}
+
+        {% if perms.poll.add_poll %}
+        <p>
+            <a href="{% url 'poll_create' %}">Create poll</a>
+        </p>
+        {% endif %}
     </div>
 </body>
 </html>
