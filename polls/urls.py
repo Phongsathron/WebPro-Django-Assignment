@@ -8,5 +8,7 @@ urlpatterns = [
     path('detail/<int:poll_id>/answer/create', views.createAnswer, name="create_answer"),
     path('detail/<int:poll_id>/create-comment', views.createComment, name="create_comment"),
     path('login/', views.mylogin, name='login'),
-    path('logout/', views.mylogout, name='logout')
+    path('logout/', views.mylogout, name='logout'),
+    path('change_password/', views.changePassword, name='change_password'),
+    path('register/', views.register, name='register')
 ]

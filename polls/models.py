@@ -42,7 +42,34 @@ class Answer(models.Model):
 
 
 class Comment(models.Model):
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, null=True, blank=True)
+
     title = models.CharField(max_length=100)
     body = models.TextField()
     email = models.EmailField()
     tel = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.title
+
+
+class Profile(models.Model):
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
+
+    line_id = models.CharField(max_length=100)
+    facebook = models.CharField(max_length=100)
+
+    MALE = 'M'
+    FEMALE = 'F'
+    OTHER = 'X'
+
+    GENDER = (
+        (MALE, 'ชาย'),
+        (FEMALE, 'หญิง'),
+        (OTHER, 'อื่นๆ')
+    )
+
+    gender = models.CharField(max_length=1, choices=GENDER)
+
+    birthdate = models.DateField(blank=True, null=True)
+

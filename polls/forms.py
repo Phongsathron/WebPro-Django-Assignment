@@ -2,6 +2,8 @@ from django import forms
 from django.core import validators
 from django.core.exceptions import ValidationError
 
+from polls.models import Profile
+
 
 def validate_even(value):
     if value % 2 != 0:
@@ -67,3 +69,37 @@ class CommentForm(forms.Form):
 
         if not (email != "" or tel != ""):
             raise forms.ValidationError('ต้องกรอก email หรือ Mobile number')
+
+
+class ChangePasswordForm(forms.Form):
+    old_password = forms.CharField(label='รหัสผ่านเก่า', required=True, widget=forms.PasswordInput)
+    new_password = forms.CharField(label='รหัสผ่านใหม่', min_length=8, required=True, widget=forms.PasswordInput)
+    new_password_confirmation = forms.CharField(label='ยืนยันรหัสผ่าน', min_length=8, required=True, widget=forms.PasswordInput)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get('new_password')
+        new_password_confirmation = cleaned_data.get('new_password_confirmation')
+
+        if new_password != new_password_confirmation:
+            raise forms.ValidationError('รหัสผ่านใหม่ และยืนยันรหัสผ่าน ไม่ตรงกัน')
+
+
+class RegisterForm(forms.Form):
+    email = forms.EmailField(label='อีเมล์', required=True)
+    username = forms.CharField(label='ชื่อผู้ใช้', required=True)
+    password = forms.CharField(label='รหัสผ่าน', min_length=8, required=True, widget=forms.PasswordInput)
+    password_confirm = forms.CharField(label='ยืนยันรหัสผ่าน', min_length=8, required=True, widget=forms.PasswordInput)
+    line_id = forms.CharField(label='Line ID', required=False)
+    facebook = forms.CharField(label='Facebook', required=False)
+    sex = forms.ChoiceField(label='เพศ', choices=Profile.GENDER, widget=forms.RadioSelect)
+    birthdate = forms.DateField(label='วันเกิด', required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        password_confirm = cleaned_data.get('password_confirm')
+
+        if password != password_confirm:
+            raise forms.ValidationError('รหัสผ่าน กับ ยืนยันรหัสผ่าน ไม่ตรงกัน')
+

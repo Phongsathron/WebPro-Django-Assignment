@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <style>
+        .errorlist{
+            color: #FF0000;
+        }
+        .success{
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <form method="post", action="{% url 'register' %}">
+        {% csrf_token %}
+
+        {% if success %}
+            <p class="success">{{ message }}</p>
+        {% endif %}
+
+        {% if not success and message %}
+            <p class="errorlist">{{ message }}</p>
+        {% endif %}
+
+        {{ form.as_p }}
+        <p><input type="submit" value="Register"></p>
+    </form>
+</body>
+</html>

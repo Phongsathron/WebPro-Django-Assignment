@@ -1,11 +1,14 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import User
+from django.db import IntegrityError
 from django.db.models import Count
 # from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
-from polls.forms import PollForm, CommentForm
-from polls.models import Poll, Question, Answer, Choice, Comment
+from polls.forms import PollForm, CommentForm, ChangePasswordForm, RegisterForm
+from polls.models import Poll, Question, Answer, Choice, Comment, Profile
 
 
 # Create your views here.
@@ -163,7 +166,8 @@ def createComment(request, poll_id):
                 title=form.cleaned_data.get('title'),
                 body=form.cleaned_data.get('body'),
                 email=form.cleaned_data.get('email'),
-                tel=form.cleaned_data.get('tel')
+                tel=form.cleaned_data.get('tel'),
+                poll=poll
             )
 
             return redirect('poll_detail', poll_id=poll_id)
@@ -177,3 +181,64 @@ def createComment(request, poll_id):
     }
 
     return render(request, 'polls/create_comment.html', context=context)
+
+
+@login_required
+def changePassword(request):
+    context = {}
+
+    if request.method == 'POST':
+        form = ChangePasswordForm(request.POST)
+
+        if form.is_valid():
+            if check_password(form.cleaned_data.get('old_password'), request.user.password):
+                request.user.set_password(form.cleaned_data.get('new_password'))
+                request.user.save()
+                context['success'] = True
+                context['message'] = None
+            else:
+                context['success'] = False
+                context['message'] = 'รหัสผ่านไม่ถูกต้อง'
+    else:
+        form = ChangePasswordForm()
+
+    context['form'] = form
+
+    return render(request, 'polls/change_password.html', context=context)
+
+
+def register(request):
+    context = {}
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+
+        if form.is_valid():
+            try:
+                user = User.objects.create(
+                    username=form.cleaned_data.get('username'),
+                    email=form.cleaned_data.get('email'),
+                    password=form.cleaned_data.get('password')
+                )
+
+                profile = Profile.objects.create(
+                    user=user,
+                    line_id=form.cleaned_data.get('line_id'),
+                    facebook=form.cleaned_data.get('facebook'),
+                    gender=form.cleaned_data.get('sex'),
+                    birthdate=form.cleaned_data.get('birthdate')
+                )
+
+                context['success'] = True
+                context['message'] = 'สมัครสมาชิกเรียบร้อยแล้ว'
+
+            except IntegrityError:
+                context['success'] = False
+                context['message'] = 'มีผุ้ใช้งานนี้ในระบบอยู่แล้ว'
+
+    else:
+        form = RegisterForm()
+
+    context['form'] = form
+
+    return render(request, 'polls/register.html', context=context)
+
