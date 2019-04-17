@@ -40,3 +40,6 @@ class Answer(models.Model):
     choice = models.OneToOneField(Choice, on_delete=models.PROTECT)
     question = models.ForeignKey(Question, on_delete=models.PROTECT)
 
+
+# class Comment(models.Model):
+#
