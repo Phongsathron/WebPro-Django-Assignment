@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update choice</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/bootstrap.min.css' %}"></link>
+    <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js'%}"></script>
+    <script src="{% static 'js/vue.js' %}"></script>
+    <script src="{% static 'js/js.cookie.js' %}"></script>
+    <script src="{% static 'js/axios.min.js' %}"></script>
+    <style>
+        th, td, table{
+            border: 1px solid #000;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h2>Update question for {{ question }}</h2>
+        <h3 v-if="success">Update Successfully!</h3>
+    <table>
+        <tr>
+            <th>Choice Text</th>
+            <th>Choice Value</th>
+            <th>Delete</th>
+        </tr>
+        <tr v-for="choice in choices">
+            <td><input type="text" v-model="choice.text"></td>
+            <td><input type="number" v-model="choice.value"></td>
+            <td><input type="button" @click="deleteChoice(choice)" value="DEL"></td>
+        </tr>
+    </table>
+    <p>
+        <input type="button" @click="addChoice" value="Add new choice">
+        <input type="button" @click="submit" value="Save data">
+    </p>
+    <p v-for="error in errorMsg">
+        [[error]]
+    </p>
+</div>
+<script>
+    var csrftoken = Cookies.get('csrftoken');
+    var app = new Vue({
+        el: '#app',
+        delimiters: ["[[", "]]"],
+        data: {
+            success: false,
+            errorMsg: '',
+            choices: []
+        },
+        created(){
+            axios.get('http://127.0.0.1:8000/polls/api/questions/' + {{ question.id }} + '/choices/')
+                .then(response => {
+                    console.log(response)
+                    response.data.choices.forEach((item, index)=>{
+                        this.choices.push({
+                            id: item.pk,
+                            text: item.fields.text,
+                            value: item.fields.value
+                        })
+                    })
+                })
+        },
+        methods:{
+            addChoice() {
+                this.choices.push({
+                    text: '',
+                    value: 0
+                })
+            },
+            deleteChoice(choice){
+                if(choice.id){
+                    axios.post('http://127.0.0.1:8000/polls/api/delete-choice/' + choice.id,
+                    this.choices, {headers: {'X-CSRFToken': csrftoken}})
+                    .then(response => {
+                        let index = this.choices.indexOf(choice)
+                        this.choices.splice(index, 1)
+                    })
+                }else{
+                    let index = this.choices.indexOf(choice)
+                    this.choices.splice(index, 1)
+                }
+
+            },
+            submit(){
+                console.log(this.choices)
+                axios.post('http://127.0.0.1:8000/polls/api/' + {{ question.id }} + '/update-choice/',
+                    this.choices, {headers: {'X-CSRFToken': csrftoken}})
+                    .then(response => {
+                        console.log(response)
+                        this.success = true
+                        this.errorMsg = ''
+
+                        axios.get('http://127.0.0.1:8000/polls/api/questions/' + {{ question.id }} + '/choices/')
+                            .then(response => {
+                                this.choices = []
+                                console.log(response)
+                                response.data.choices.forEach((item, index)=>{
+                                    this.choices.push({
+                                        id: item.pk,
+                                        text: item.fields.text,
+                                        value: item.fields.value
+                                    })
+                                })
+                            })
+                    })
+                    .catch(error => {
+                        console.log(error.response)
+                        this.errorMsg = error.response.data.message
+                    })
+            }
+        }
+    })
+</script>
+</body>
+</html>

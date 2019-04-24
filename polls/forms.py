@@ -2,7 +2,7 @@ from django import forms
 from django.core import validators
 from django.core.exceptions import ValidationError
 
-from polls.models import Profile
+from polls.models import Profile, Poll, Question, Choice, Comment
 
 
 def validate_even(value):
@@ -71,6 +71,12 @@ class CommentForm(forms.Form):
             raise forms.ValidationError('ต้องกรอก email หรือ Mobile number')
 
 
+class CommentModelForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        exclude = ['poll']
+
+
 class ChangePasswordForm(forms.Form):
     old_password = forms.CharField(label='รหัสผ่านเก่า', required=True, widget=forms.PasswordInput)
     new_password = forms.CharField(label='รหัสผ่านใหม่', min_length=8, required=True, widget=forms.PasswordInput)
@@ -103,3 +109,34 @@ class RegisterForm(forms.Form):
         if password != password_confirm:
             raise forms.ValidationError('รหัสผ่าน กับ ยืนยันรหัสผ่าน ไม่ตรงกัน')
 
+
+class QuestionForm(forms.Form):
+    question_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
+    text = forms.CharField(widget=forms.Textarea)
+    type = forms.ChoiceField(choices=Question.TYPES, initial='01')
+
+
+class PollModelForm(forms.ModelForm):
+
+    class Meta:
+        model = Poll
+        exclude = ['del_flag']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get('start_date')
+        end = cleaned_data.get('end_date')
+
+        if start and not end:
+            # raise forms.ValidationError('โปรดเลือกวันที่สิ้นสุด')
+            self.add_error('end_date', 'โปรดเลือกวันที่สิ้นสุด')
+
+        if end and not start:
+            # raise forms.ValidationError('โปรดเลือกวันที่เริ่มต้น')
+            self.add_error('start_date', 'โปรดเลือกวันที่สิ้นสุด')
+
+
+class ChoiceModelForm(forms.ModelForm):
+    class Meta:
+        model = Choice
+        fields = '__all__'

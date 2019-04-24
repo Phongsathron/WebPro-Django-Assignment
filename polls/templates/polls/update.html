@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Poll</title>
+    <style>
+        .errorlist{
+            color: #FF0000;
+        }
+    </style>
+</head>
+<body>
+<h1>Update poll</h1>
+    {% if success %}
+        <p>{{ success }}</p>
+    {% endif %}
+    <form method="post" action="{% url 'poll_update' poll.id %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <hr />
+        <h2>Add question</h2>
+        {{ formset.management_form }}
+        <table>
+            {% for form in formset %}
+                <tr>
+                    <td style="width: 80px">{{ form.text.label_tag }}</td>
+                    <td>{{ form.text.error }}{{ form.text }}{{ form.question_id }}</td>
+                </tr>
+                <tr>
+                    <td>{{ form.type.label_tag }}</td>
+                    <td>{{ form.type.error }}{{ form.type }}</td>
+                </tr>
+                {% if form.question_id.value > 0 %}
+                    <tr>
+                        <td><a href="{% url 'delete_question' form.question_id.value %}">Delete</a></td>
+                        <td><a href="{% url 'add_choice' form.question_id.value %}">Add Choice(s)</a></td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+        <p><input type="submit" value="Update"></p>
+    </form>
+</body>
+</html>
